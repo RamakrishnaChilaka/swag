@@ -1138,6 +1138,8 @@ func (parser *Parser) parseField(field *ast.Field) (*structField, error) {
 		return &structField{name: ""}, nil
 	}
 
+	type _reCreatingStructField = structField
+
 	structField := &structField{
 		name:       field.Names[0].Name,
 		schemaType: prop.SchemaType,
@@ -1169,6 +1171,12 @@ func (parser *Parser) parseField(field *ast.Field) (*structField, error) {
 	// `json:"tag"` -> json:"tag"
 	structTag := reflect.StructTag(strings.Replace(field.Tag.Value, "`", "", -1))
 	jsonTag := structTag.Get("json")
+	nferTag := structTag.Get("nfer")
+
+	if strings.Contains(nferTag, "docIgnore") {
+		return &_reCreatingStructField{}, nil
+	}
+
 	// json:"tag,hoge"
 	if strings.Contains(jsonTag, ",") {
 		// json:",hoge"
